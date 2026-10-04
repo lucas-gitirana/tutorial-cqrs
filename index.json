@@ -1,0 +1,53 @@
+{
+  "title": "Padrão CQRS na prática",
+  "description": "Separe os modelos de escrita e leitura de um microsserviço de pedidos: comandos gravam e publicam eventos; projeções montam o modelo de leitura.",
+  "details": {
+    "intro": {
+      "text": "tutorial/intro.md",
+      "background": "tutorial/setup.sh"
+    },
+    "steps": [
+      {
+        "title": "Conhecendo o ambiente",
+        "text": "tutorial/etapa-01.md",
+        "verify": "tutorial/verificar-etapa-01.sh",
+        "file": { "name": "docker-compose.yml", "line": 16 },
+        "points": 10
+      },
+      {
+        "title": "Implementando um comando",
+        "text": "tutorial/etapa-02.md",
+        "verify": "tutorial/verificar-etapa-02.sh",
+        "file": { "name": "servicos/pedidos-comando/comandos.py", "line": 76 },
+        "points": 20
+      },
+      {
+        "title": "Construindo o modelo de leitura",
+        "text": "tutorial/etapa-03.md",
+        "verify": "tutorial/verificar-etapa-03.sh",
+        "file": { "name": "servicos/pedidos-consulta/projecoes.py", "line": 56 },
+        "points": 25
+      },
+      {
+        "title": "Ponta a ponta e consistência eventual",
+        "text": "tutorial/etapa-04.md",
+        "verify": "tutorial/verificar-etapa-04.sh",
+        "file": { "name": "docker-compose.yml", "line": 41 },
+        "points": 20
+      },
+      {
+        "title": "Um novo modelo de leitura",
+        "text": "tutorial/etapa-05.md",
+        "verify": "tutorial/verificar-etapa-05.sh",
+        "file": { "name": "servicos/pedidos-consulta/projecoes.py", "line": 69 },
+        "points": 25
+      }
+    ],
+    "finish": {
+      "text": "tutorial/finalizacao.md"
+    }
+  },
+  "backend": {
+    "imageid": "docker-compose:tutorial-cqrs"
+  }
+}

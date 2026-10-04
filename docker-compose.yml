@@ -1,0 +1,54 @@
+# Ambiente do tutorial CQRS.
+#   pedidos-comando  -> API de escrita  (http://localhost:8011)
+#   pedidos-consulta -> API de leitura  (http://localhost:8012)
+#   redis            -> barramento de eventos (Redis Streams)
+name: tutorial-cqrs
+
+services:
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  pedidos-comando:
+    build: ./servicos
+    volumes:
+      - ./servicos/pedidos-comando:/app   # código montado: basta reiniciar o container
+      - dados-comando:/dados
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      BANCO_PATH: /dados/pedidos.db
+    ports:
+      - "8011:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude')"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  pedidos-consulta:
+    build: ./servicos
+    volumes:
+      - ./servicos/pedidos-consulta:/app
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      ATRASO_PROJECAO_SEGUNDOS: "2"
+    ports:
+      - "8012:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude')"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  dados-comando:
