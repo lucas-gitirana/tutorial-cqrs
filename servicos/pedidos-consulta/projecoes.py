@@ -53,24 +53,38 @@ def projetar_resumo_por_cliente(modelo: ModeloDeLeitura, evento: dict) -> None:
 def projetar_pedido(modelo: ModeloDeLeitura, evento: dict) -> None:
     dados = evento["dados"]
 
-    # TODO (Etapa 3):
-    #   - "PedidoCriado": guarde em modelo.pedidos[dados["pedido_id"]] um documento com
-    #       pedido_id, cliente, status="CRIADO", itens, quantidade_itens (soma das
-    #       quantidades dos itens), total e criado_em.
-    #   - "PedidoCancelado": se o pedido existir em modelo.pedidos, mude o status
-    #       para "CANCELADO" e grave cancelado_em. Se não existir, ignore.
-    pass
+    if evento["tipo"] == "PedidoCriado":
+        modelo.pedidos[dados["pedido_id"]] = {
+            "pedido_id": dados["pedido_id"],
+            "cliente": dados["cliente"],
+            "status": "CRIADO",
+            "itens": dados["itens"],
+            "quantidade_itens": sum(item["quantidade"] for item in dados["itens"]),
+            "total": dados["total"],
+            "criado_em": dados["criado_em"],
+        }
+
+    elif evento["tipo"] == "PedidoCancelado":
+        pedido = modelo.pedidos.get(dados["pedido_id"])
+        if pedido is not None:
+            pedido["status"] = "CANCELADO"
+            pedido["cancelado_em"] = dados["cancelado_em"]
 
 
 # ---------------------------------------------------------------------------
 # Etapa 5: um NOVO modelo de leitura — produtos mais vendidos
 # ---------------------------------------------------------------------------
 def projetar_vendas_por_produto(modelo: ModeloDeLeitura, evento: dict) -> None:
-    # TODO (Etapa 5): atualize modelo.vendas_por_produto (produto -> quantidade).
-    #   - "PedidoCriado":    SOME a quantidade de cada item de evento["dados"]["itens"]
-    #   - "PedidoCancelado": SUBTRAIA a quantidade de cada item
-    #   - outros eventos:    ignore
-    pass
+    if evento["tipo"] == "PedidoCriado":
+        sinal = 1
+    elif evento["tipo"] == "PedidoCancelado":
+        sinal = -1
+    else:
+        return
+
+    for item in evento["dados"]["itens"]:
+        atual = modelo.vendas_por_produto.get(item["produto"], 0)
+        modelo.vendas_por_produto[item["produto"]] = atual + sinal * item["quantidade"]
 
 
 PROJECOES = (projetar_resumo_por_cliente, projetar_pedido, projetar_vendas_por_produto)

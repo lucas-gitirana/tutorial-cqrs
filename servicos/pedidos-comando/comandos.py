@@ -71,13 +71,22 @@ def criar_pedido(repositorio, publicar: Publicar, dados: dict) -> str:
 
 def cancelar_pedido(repositorio, publicar: Publicar, pedido_id: str) -> None:
     """Comando CancelarPedido (Etapa 2)."""
-    pedido = repositorio.obter_pedido(pedido_id)  # dict com id, cliente, status, itens e total — ou None
+    pedido = repositorio.obter_pedido(pedido_id)
 
-    # TODO (Etapa 2): implemente o comando seguindo os três passos de criar_pedido.
-    #   1. Validar:
-    #      - pedido inexistente      -> raise ErroDeComando("...", status=404)
-    #      - pedido já "CANCELADO"   -> raise ErroDeComando("...", status=409)
-    #   2. Gravar: repositorio.atualizar_status(pedido_id, "CANCELADO")
-    #   3. Publicar o evento "PedidoCancelado" com pedido_id, cliente, itens,
-    #      total e cancelado_em (use agora()). Veja o formato no texto da etapa.
-    raise ErroDeComando("Cancelamento ainda não implementado (Etapa 2).", status=501)
+    if pedido is None:
+        raise ErroDeComando(f"Pedido '{pedido_id}' não encontrado.", status=404)
+    if pedido["status"] == "CANCELADO":
+        raise ErroDeComando(f"Pedido '{pedido_id}' já está cancelado.", status=409)
+
+    repositorio.atualizar_status(pedido_id, "CANCELADO")
+
+    publicar({
+        "tipo": "PedidoCancelado",
+        "dados": {
+            "pedido_id": pedido_id,
+            "cliente": pedido["cliente"],
+            "itens": pedido["itens"],
+            "total": pedido["total"],
+            "cancelado_em": agora(),
+        },
+    })
