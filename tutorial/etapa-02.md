@@ -1,65 +1,47 @@
-# Etapa 2 — Implementando um comando
+![Mapa: lado de escrita](tutorial/img/mapa-comando.svg)
 
-**Objetivo:** implementar o comando **CancelarPedido** no lado de escrita.
+📍 **Você está aqui:** lado de **escrita**. Você vai mandar o seu primeiro **comando**.
 
-O arquivo `servicos/pedidos-comando/comandos.py` foi aberto ao lado. Use a
-função `criar_pedido`, logo acima, como modelo. Todo comando segue três passos:
+## 1. A requisição
 
-1. **validar** as regras de negócio;
-2. **gravar** a mudança no modelo de escrita;
-3. **publicar** um evento de domínio, com o nome no passado: algo que *já aconteceu*.
+Um comando é um **pedido de mudança**. Este cria um pedido para a cliente `ana`:
 
-## O que implementar em `cancelar_pedido`
+**`POST http://localhost:8011/pedidos`**
 
-| Situação | O que fazer |
-| --- | --- |
-| `repositorio.obter_pedido(pedido_id)` devolve `None` | `raise ErroDeComando("...", status=404)` |
-| o pedido já está com status `"CANCELADO"` | `raise ErroDeComando("...", status=409)` |
-| caso contrário | `repositorio.atualizar_status(pedido_id, "CANCELADO")` e publicar o evento |
-
-O evento deve ter este formato:
-
-```python
+```json
 {
-    "tipo": "PedidoCancelado",
-    "dados": {
-        "pedido_id": pedido_id,
-        "cliente": pedido["cliente"],
-        "itens": pedido["itens"],
-        "total": pedido["total"],
-        "cancelado_em": agora(),
-    },
+  "cliente": "ana",
+  "itens": [
+    { "produto": "caneca",   "quantidade": 2, "preco": 25.0 },
+    { "produto": "camiseta", "quantidade": 1, "preco": 59.9 }
+  ]
 }
 ```
 
-> **Por que repetir cliente, itens e total no evento?** O lado de consulta só
-> conhece o mundo pelos eventos. Se o evento trouxer tudo o que as projeções
-> precisam, nenhuma delas tem que perguntar nada ao lado de comando. Isso
-> mantém os dois lados desacoplados.
-
-## Teste no serviço
-
-O código é montado como volume no container, então basta reiniciar o serviço:
+## 2. Envie
 
 ```bash
-docker compose restart pedidos-comando && sleep 2
+curl -s -X POST localhost:8011/pedidos \
+  -H 'Content-Type: application/json' \
+  -d '{"cliente": "ana", "itens": [{"produto": "caneca", "quantidade": 2, "preco": 25.0}, {"produto": "camiseta", "quantidade": 1, "preco": 59.9}]}' \
+  -w '← HTTP %{http_code}\n' | tee /tmp/pedido-ana.json
 ```
 
-Crie um pedido e cancele-o:
+> O `curl` envia o JSON acima. O `tee` guarda a resposta em `/tmp/pedido-ana.json`
+> para reaproveitarmos o id depois.
 
-```bash
-PEDIDO=$(curl -s -w '\n' -X POST localhost:8011/pedidos -H 'Content-Type: application/json' \
-  -d '{"cliente": "bruno", "itens": [{"produto": "livro", "quantidade": 1, "preco": 80.0}]}' \
-  | python3 -c 'import sys, json; print(json.load(sys.stdin)["pedido_id"])')
-echo "Pedido criado: $PEDIDO"
-curl -s -w '\n' -X POST localhost:8011/pedidos/$PEDIDO/cancelar
+## 3. Olhe a resposta
+
+```text
+{"pedido_id": "a1b2c3d4"}
+← HTTP 201
 ```
 
-Rode o cancelamento de novo: a resposta agora deve ser HTTP 409.
+- **201 Created**: o pedido foi criado.
+- Só veio o **id**. Comando **não devolve dados para exibição**: quem quer ler
+  pedidos vai ao outro lado do mapa.
 
-```bash
-curl -s -w '\n' -X POST localhost:8011/pedidos/$PEDIDO/cancelar
-```
+Por trás, o `pedidos-comando` fez três coisas: **validou** os dados, **gravou**
+no SQLite e **publicou** o evento `PedidoCriado` no Redis.
 
-Clique em **Verificar**. Esta verificação testa `comandos.py` diretamente,
-sem precisar dos containers.
+## 4. Clique em Verificar ✔

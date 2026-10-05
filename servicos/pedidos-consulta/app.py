@@ -6,7 +6,7 @@ leitura em memória; depois continua escutando novos eventos.
 Rotas:
   GET /pedidos/<id>              -> detalhes de um pedido
   GET /clientes/<cliente>/resumo -> pedidos ativos e total gasto do cliente
-  GET /produtos/mais-vendidos    -> ranking de produtos (Etapa 5)
+  GET /produtos/mais-vendidos    -> ranking de produtos (Etapa 9)
   GET /saude                     -> estado do serviço e da projeção
 """
 import logging
@@ -32,7 +32,7 @@ class _OcultarHealthcheck(logging.Filter):
 
 logging.getLogger("werkzeug").addFilter(_OcultarHealthcheck())
 
-# Atraso artificial para deixar visível a consistência eventual (Etapa 4).
+# Atraso artificial para deixar visível a consistência eventual (Etapa 8).
 ATRASO_SEGUNDOS = float(os.environ.get("ATRASO_PROJECAO_SEGUNDOS", "0"))
 
 modelo = ModeloDeLeitura()
@@ -93,5 +93,9 @@ def saude():
 
 
 if __name__ == "__main__":
-    threading.Thread(target=barramento.consumir_desde_o_inicio, args=(ao_receber,), daemon=True).start()
-    app.run(host="0.0.0.0", port=8000, threaded=True)
+    # use_reloader: ao salvar um .py, o serviço reinicia sozinho e reconstrói o
+    # modelo de leitura do zero. O consumidor só roda no processo filho (o que
+    # atende as requisições), não no processo que vigia os arquivos.
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        threading.Thread(target=barramento.consumir_desde_o_inicio, args=(ao_receber,), daemon=True).start()
+    app.run(host="0.0.0.0", port=8000, threaded=True, use_reloader=True)

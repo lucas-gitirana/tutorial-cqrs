@@ -35,7 +35,7 @@ def agora() -> str:
 
 
 def criar_pedido(repositorio, publicar: Publicar, dados: dict) -> str:
-    """Comando CriarPedido. Exemplo completo — use-o como referência na Etapa 2."""
+    """Comando CriarPedido. Exemplo completo — use-o como referência nas Etapas 4 e 5."""
     cliente = str(dados.get("cliente") or "").strip()
     itens = dados.get("itens") or []
 
@@ -70,14 +70,21 @@ def criar_pedido(repositorio, publicar: Publicar, dados: dict) -> str:
 
 
 def cancelar_pedido(repositorio, publicar: Publicar, pedido_id: str) -> None:
-    """Comando CancelarPedido (Etapa 2)."""
-    pedido = repositorio.obter_pedido(pedido_id)  # dict com id, cliente, status, itens e total — ou None
+    """Comando CancelarPedido. Você vai completá-lo nas Etapas 4 e 5."""
+    # Busca o pedido no modelo de escrita. Devolve None se ele não existir, ou um dict:
+    #   {"id": "a1b2c3d4", "cliente": "ana", "status": "CRIADO", "itens": [...], "total": 109.9}
+    pedido = repositorio.obter_pedido(pedido_id)
 
-    # TODO (Etapa 2): implemente o comando seguindo os três passos de criar_pedido.
-    #   1. Validar:
-    #      - pedido inexistente      -> raise ErroDeComando("...", status=404)
-    #      - pedido já "CANCELADO"   -> raise ErroDeComando("...", status=409)
-    #   2. Gravar: repositorio.atualizar_status(pedido_id, "CANCELADO")
-    #   3. Publicar o evento "PedidoCancelado" com pedido_id, cliente, itens,
-    #      total e cancelado_em (use agora()). Veja o formato no texto da etapa.
-    raise ErroDeComando("Cancelamento ainda não implementado (Etapa 2).", status=501)
+    # ═══ PASSO 1 · VALIDAR (Etapa 4) ═══════════════════════════════════════
+    # ✏️  Escreva aqui os dois `if` que rejeitam o comando (404 e 409).
+
+
+
+    # ═══ PASSO 2 · GRAVAR (Etapa 5) ════════════════════════════════════════
+    # ✏️  Escreva aqui a linha que muda o status do pedido para "CANCELADO".
+
+
+
+    # ═══ PASSO 3 · PUBLICAR O EVENTO (Etapa 5) ═════════════════════════════
+    # ✏️  Escreva aqui a chamada publicar({...}) com o evento "PedidoCancelado".
+

@@ -1,34 +1,32 @@
-# Parabéns, você aplicou CQRS! 🎉
+## Você montou o mapa inteiro 🎉
 
-## O que você construiu
+![Mapa do CQRS](tutorial/img/mapa-geral.svg)
 
-- Um lado de **comando** que valida, grava em um banco normalizado e publica eventos.
-- Um lado de **consulta** com três projeções independentes, reconstruídas a
-  partir do log de eventos.
-- Uma consulta nova (ranking de produtos) criada **sem tocar** no lado de escrita.
-
-## Benefícios e custos
-
-| Benefícios | Custos |
+| Peça do mapa | O que você fez |
 | --- | --- |
-| Consultas rápidas e no formato da tela | Mais peças para operar (broker, dois serviços) |
-| Leitura e escrita escalam de forma independente | **Atraso de replicação**: consistência eventual |
-| Novas consultas sem mexer na escrita | Mais código e mais cenários para testar |
-| Melhor separação de responsabilidades | Complexidade arquitetural |
+| **Comando** | `CancelarPedido`: validar → gravar → publicar |
+| **Evento** | `PedidoCancelado`, com tudo o que a leitura precisa |
+| **Projeção** | detalhes do pedido, a partir de `PedidoCriado` e `PedidoCancelado` |
+| **Nova tela** | ranking de produtos, sem tocar no lado de escrita |
+| **Consistência eventual** | viu a leitura "chegar depois" e como lidar com isso |
 
-Use CQRS **quando ele resolve um problema real** (leituras muito diferentes
-ou muito mais frequentes que as escritas, várias visões dos mesmos dados).
-Em um CRUD simples, ele só adiciona complexidade (Nadareishvili *et al.*, 2016).
+## Vale a pena usar CQRS?
 
-## Para refletir
+| ✅ Ganha | ⚠️ Paga |
+| --- | --- |
+| consultas rápidas, no formato da tela | mais peças para operar (broker, dois serviços) |
+| leitura e escrita escalam separadas | **consistência eventual** |
+| telas novas sem mexer na escrita | mais código para escrever e testar |
 
-1. O que aconteceria com o modelo de leitura se o `pedidos-consulta` ficasse
-   fora do ar por 10 minutos e depois voltasse?
-2. Neste tutorial, o comando grava no SQLite e **depois** publica no Redis. O
-   que acontece se o serviço cair entre essas duas operações? *(Pesquise o
-   padrão Transactional Outbox.)*
-3. Em produção, quais tecnologias você usaria para o modelo de leitura?
-   (ex.: Elasticsearch, MongoDB, Redis.)
+Use CQRS quando ele resolve um problema real: leituras muito mais frequentes que
+escritas, ou muitas "telas" diferentes dos mesmos dados. Em um CRUD simples, ele
+só adiciona complexidade.
+
+## Para pensar
+
+1. Se o `pedidos-consulta` ficar 10 minutos fora do ar, o que acontece quando ele voltar?
+2. O comando grava no SQLite e **depois** publica no Redis. E se o serviço cair
+   entre as duas coisas? *(Pesquise: padrão Transactional Outbox.)*
 
 ## Limpando o ambiente
 
@@ -36,4 +34,4 @@ Em um CRUD simples, ele só adiciona complexidade (Nadareishvili *et al.*, 2016)
 docker compose down -v
 ```
 
-O código completo de referência está na branch `solucao` deste repositório.
+A solução completa está na branch `solucao` deste repositório.

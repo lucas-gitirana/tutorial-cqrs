@@ -16,11 +16,11 @@ class ModeloDeLeitura:
     qualquer momento reaplicando todos os eventos do stream."""
 
     def __init__(self) -> None:
-        # pedido_id -> documento pronto para exibição (Etapa 3)
+        # pedido_id -> documento pronto para exibição (Etapas 6 e 7)
         self.pedidos: dict[str, dict] = {}
         # cliente -> {"cliente", "pedidos_ativos", "total_gasto"}
         self.resumo_por_cliente: dict[str, dict] = {}
-        # produto -> quantidade vendida, desconsiderando cancelamentos (Etapa 5)
+        # produto -> quantidade vendida, desconsiderando cancelamentos (Etapa 9)
         self.vendas_por_produto: dict[str, int] = {}
 
     def mais_vendidos(self, limite: int = 5) -> list[dict]:
@@ -48,29 +48,30 @@ def projetar_resumo_por_cliente(modelo: ModeloDeLeitura, evento: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Etapa 3: projeção dos detalhes de cada pedido
+# Etapas 6 e 7: projeção dos DETALHES de cada pedido
 # ---------------------------------------------------------------------------
 def projetar_pedido(modelo: ModeloDeLeitura, evento: dict) -> None:
     dados = evento["dados"]
 
-    # TODO (Etapa 3):
-    #   - "PedidoCriado": guarde em modelo.pedidos[dados["pedido_id"]] um documento com
-    #       pedido_id, cliente, status="CRIADO", itens, quantidade_itens (soma das
-    #       quantidades dos itens), total e criado_em.
-    #   - "PedidoCancelado": se o pedido existir em modelo.pedidos, mude o status
-    #       para "CANCELADO" e grave cancelado_em. Se não existir, ignore.
-    pass
+    # ═══ Etapa 6 · ao receber "PedidoCriado" ═══════════════════════════════
+    # ✏️  Escreva aqui o `if` que guarda o documento em modelo.pedidos.
+
+
+
+    # ═══ Etapa 7 · ao receber "PedidoCancelado" ════════════════════════════
+    # ✏️  Escreva aqui o `if` que marca o documento como CANCELADO.
+
 
 
 # ---------------------------------------------------------------------------
-# Etapa 5: um NOVO modelo de leitura — produtos mais vendidos
+# Etapa 9: um NOVO modelo de leitura — produtos mais vendidos
 # ---------------------------------------------------------------------------
 def projetar_vendas_por_produto(modelo: ModeloDeLeitura, evento: dict) -> None:
-    # TODO (Etapa 5): atualize modelo.vendas_por_produto (produto -> quantidade).
-    #   - "PedidoCriado":    SOME a quantidade de cada item de evento["dados"]["itens"]
-    #   - "PedidoCancelado": SUBTRAIA a quantidade de cada item
-    #   - outros eventos:    ignore
-    pass
+    dados = evento["dados"]
+
+    # ═══ Etapa 9 ═══════════════════════════════════════════════════════════
+    # ✏️  Escreva aqui os dois `if` (PedidoCriado soma, PedidoCancelado subtrai).
+
 
 
 PROJECOES = (projetar_resumo_por_cliente, projetar_pedido, projetar_vendas_por_produto)

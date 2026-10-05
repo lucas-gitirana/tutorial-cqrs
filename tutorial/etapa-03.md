@@ -1,55 +1,46 @@
-# Etapa 3 — Construindo o modelo de leitura
+![Mapa: lado de leitura](tutorial/img/mapa-consulta.svg)
 
-**Objetivo:** implementar a projeção que mantém os **detalhes de cada pedido**
-prontos para consulta.
+📍 **Você está aqui:** o evento atravessou o Redis e chegou ao lado de **leitura**.
 
-Uma **projeção** é uma função que recebe um evento e atualiza o modelo de
-leitura. Aqui, o modelo de leitura é um dicionário em memória:
-`modelo.pedidos[pedido_id] -> documento`.
+## 1. Tente ler no lado errado
 
-O arquivo `servicos/pedidos-consulta/projecoes.py` foi aberto ao lado.
-Compare com a projeção de exemplo `projetar_resumo_por_cliente`, logo acima.
-
-## O que implementar em `projetar_pedido`
-
-**Ao receber `PedidoCriado`**, guarde em `modelo.pedidos[dados["pedido_id"]]`
-um documento **pronto para exibição**:
-
-```python
-{
-    "pedido_id": ...,
-    "cliente": ...,
-    "status": "CRIADO",
-    "itens": ...,
-    "quantidade_itens": ...,  # soma das quantidades de todos os itens
-    "total": ...,
-    "criado_em": ...,
-}
-```
-
-**Ao receber `PedidoCancelado`**, se o pedido existir em `modelo.pedidos`,
-mude `status` para `"CANCELADO"` e grave `cancelado_em`. Se não existir,
-ignore o evento.
-
-Repare que `quantidade_itens` é calculado **uma vez, na escrita da projeção**,
-e não a cada consulta. No modelo de escrita (SQLite), o mesmo dado exigiria
-um `JOIN` com `SUM` em toda leitura.
-
-## Teste no serviço
+**`GET http://localhost:8011/pedidos`** (porta do **comando**)
 
 ```bash
-docker compose restart pedidos-consulta && sleep 3
-docker compose logs pedidos-consulta --tail 15
+curl -s localhost:8011/pedidos -w '← HTTP %{http_code}\n'
 ```
 
-Nos logs, o serviço reaplica **todos os eventos desde o início** do stream.
-Como o modelo de leitura é só uma projeção dos eventos, dá para apagá-lo e
-reconstruí-lo a qualquer momento. Por isso o pedido que você criou na Etapa 1
-agora aparece:
+**405 Method Not Allowed**: o lado de comando **não responde consultas**.
+Cada lado tem uma única responsabilidade.
+
+## 2. Leia no lado certo
+
+**`GET http://localhost:8012/clientes/ana/resumo`** (porta da **consulta**)
 
 ```bash
-PRIMEIRO_PEDIDO=$(python3 -c 'import json; print(json.load(open("/tmp/primeiro-pedido.json"))["pedido_id"])')
-curl -s -w '\n' localhost:8012/pedidos/$PRIMEIRO_PEDIDO
+curl -s localhost:8012/clientes/ana/resumo -w '← HTTP %{http_code}\n'
 ```
 
-Clique em **Verificar**. Esta verificação testa `projecoes.py` diretamente.
+Resposta esperada:
+
+```json
+{ "cliente": "ana", "pedidos_ativos": 1, "total_gasto": 109.9 }
+```
+
+Repare: o `total_gasto` **já vem calculado**. Ninguém somou nada na hora da
+consulta. Quem preparou esse resumo foi uma **projeção** (você vai entender
+isso na Etapa 6).
+
+> Veio 404? Espere 2 segundos e rode de novo. Na Etapa 8 você descobre por quê.
+
+## 3. Espie o evento no Redis
+
+```bash
+docker compose exec redis redis-cli XRANGE pedidos.eventos - +
+```
+
+Esse é o **stream** `pedidos.eventos`: a lista de tudo o que já aconteceu, em
+ordem. Você deve ver o seu `PedidoCriado` com os dados da `ana`.
+
+✅ Você já percorreu o mapa inteiro: **comando → evento → consulta**. Agora
+vamos construir cada pedaço. Clique em **Avançar**.
