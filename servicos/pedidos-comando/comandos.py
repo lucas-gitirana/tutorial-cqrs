@@ -35,7 +35,7 @@ def agora() -> str:
 
 
 def criar_pedido(repositorio, publicar: Publicar, dados: dict) -> str:
-    """Comando CriarPedido. Exemplo completo — use-o como referência na Etapa 2."""
+    """Comando CriarPedido. Exemplo completo — use-o como referência nas Etapas 4 e 5."""
     cliente = str(dados.get("cliente") or "").strip()
     itens = dados.get("itens") or []
 
@@ -70,16 +70,29 @@ def criar_pedido(repositorio, publicar: Publicar, dados: dict) -> str:
 
 
 def cancelar_pedido(repositorio, publicar: Publicar, pedido_id: str) -> None:
-    """Comando CancelarPedido (Etapa 2)."""
+    """Comando CancelarPedido. Você vai completá-lo nas Etapas 4 e 5."""
+    # Busca o pedido no modelo de escrita. Devolve None se ele não existir, ou um dict:
+    #   {"id": "a1b2c3d4", "cliente": "ana", "status": "CRIADO", "itens": [...], "total": 109.9}
     pedido = repositorio.obter_pedido(pedido_id)
 
+    # ═══ PASSO 1 · VALIDAR (Etapa 4) ═══════════════════════════════════════
+    # ✏️  Escreva aqui os dois `if` que rejeitam o comando (404 e 409).
     if pedido is None:
-        raise ErroDeComando(f"Pedido '{pedido_id}' não encontrado.", status=404)
-    if pedido["status"] == "CANCELADO":
-        raise ErroDeComando(f"Pedido '{pedido_id}' já está cancelado.", status=409)
+        raise ErroDeComando("Pedido não encontrado.", status=404)
 
+    if pedido["status"] == "CANCELADO":
+        raise ErroDeComando("Pedido já está cancelado.", status=409)
+
+
+
+    # ═══ PASSO 2 · GRAVAR (Etapa 5) ════════════════════════════════════════
+    # ✏️  Escreva aqui a linha que muda o status do pedido para "CANCELADO".
     repositorio.atualizar_status(pedido_id, "CANCELADO")
 
+
+
+    # ═══ PASSO 3 · PUBLICAR O EVENTO (Etapa 5) ═════════════════════════════
+    # ✏️  Escreva aqui a chamada publicar({...}) com o evento "PedidoCancelado".
     publicar({
         "tipo": "PedidoCancelado",
         "dados": {
@@ -90,3 +103,4 @@ def cancelar_pedido(repositorio, publicar: Publicar, pedido_id: str) -> None:
             "cancelado_em": agora(),
         },
     })
+

@@ -1,34 +1,55 @@
-# Etapa 5 — Um novo modelo de leitura
+![Mapa: lado de escrita](tutorial/img/mapa-comando.svg)
 
-**Objetivo:** criar uma consulta nova, **"produtos mais vendidos"**, sem
-alterar nenhuma linha do lado de comando.
+📍 **Você está aqui:** terminando o **CancelarPedido**: gravar no SQLite e
+publicar o evento no Redis (as setas **grava** e **evento** do mapa).
 
-O time de marketing quer um ranking de produtos. Sem CQRS, isso seria uma
-consulta pesada no banco transacional (`JOIN` + `GROUP BY` + `ORDER BY`),
-competindo com as escritas. Com CQRS, basta uma nova projeção.
+## ✏️ Faça: PASSO 2 · GRAVAR
 
-## O que implementar em `projetar_vendas_por_produto`
+Abaixo do marcador **PASSO 2**, escreva uma linha:
 
-O arquivo `servicos/pedidos-consulta/projecoes.py` foi aberto na função.
-Atualize o dicionário `modelo.vendas_por_produto` (`produto -> quantidade`):
-
-- `PedidoCriado`: **some** a `quantidade` de cada item ao produto correspondente;
-- `PedidoCancelado`: **subtraia** a `quantidade` de cada item;
-- outros tipos de evento: ignore.
-
-A rota `GET /produtos/mais-vendidos` já existe e ordena esse dicionário
-(veja `ModeloDeLeitura.mais_vendidos`).
-
-## Teste no serviço
-
-```bash
-docker compose restart pedidos-consulta && sleep 3
-curl -s -w '\n' localhost:8012/produtos/mais-vendidos
+```python
+    repositorio.atualizar_status(pedido_id, "CANCELADO")
 ```
 
-O ranking já inclui os pedidos das etapas anteriores, **criados antes de esta
-projeção existir**. Ao reiniciar, o serviço reprocessou o histórico de eventos
-e montou o novo modelo do zero. Esse é um dos maiores benefícios de construir
-consultas a partir de eventos.
+## ✏️ Faça: PASSO 3 · PUBLICAR
 
-Clique em **Verificar**.
+Um **evento** conta algo que **já aconteceu**, por isso o nome fica no passado:
+`PedidoCancelado`. Abaixo do marcador **PASSO 3**, escreva (é quase igual ao
+`publicar` de `criar_pedido`, logo acima):
+
+```python
+    publicar({
+        "tipo": "PedidoCancelado",
+        "dados": {
+            "pedido_id": pedido_id,
+            "cliente": pedido["cliente"],
+            "itens": pedido["itens"],
+            "total": pedido["total"],
+            "cancelado_em": agora(),
+        },
+    })
+```
+
+> **Por que mandar cliente, itens e total no evento?** O lado de consulta só
+> conhece o mundo pelos eventos. Se o evento já traz tudo, ele nunca precisa
+> perguntar nada ao lado de comando. Os dois lados ficam **independentes**.
+
+**Salve** o arquivo (`Ctrl+S`).
+
+## 🧪 Teste: cancele o pedido da `ana`
+
+**`POST http://localhost:8011/pedidos/<id do pedido da ana>/cancelar`**
+
+```bash
+curl -s -X POST localhost:8011/pedidos/$(cut -s -d'"' -f4 /tmp/pedido-ana.json)/cancelar -w '← HTTP %{http_code}\n'
+```
+
+> `$(cut ...)` lê o id que o `tee` guardou na Etapa 2.
+
+Esperado: `"status": "CANCELADO"` e `← HTTP 200`. Agora **rode o mesmo comando
+de novo**: deve vir `← HTTP 409`, a validação da Etapa 4 funcionando.
+
+## Clique em Verificar ✔
+
+> Deu erro de conexão? Pode ser um erro de digitação no Python. Veja com
+> `docker compose logs pedidos-comando --tail 20`.

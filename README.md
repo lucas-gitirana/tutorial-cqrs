@@ -6,7 +6,7 @@ de um microsserviço de pedidos: o lado de comando grava em um banco
 normalizado e publica eventos, e o lado de consulta monta projeções otimizadas
 para leitura.
 
-**Duração estimada:** 35 minutos · 5 etapas com avaliação automática.
+9 etapas curtas, todas com avaliação automática.
 
 ## Como começar
 
@@ -44,6 +44,7 @@ servicos/
   pedidos-consulta/        lado de LEITURA: projeções em memória
 tutorial/
   *.md                     texto de cada etapa
+  img/                     diagramas "você está aqui" (gerados por gerar_mapas.py)
   verificar-etapa-NN.sh    avaliação automática de cada etapa
   verificacoes/            checagens em Python (só biblioteca padrão)
 ```
@@ -53,7 +54,7 @@ tutorial/
 | Sintoma | O que fazer |
 | --- | --- |
 | `Connection refused` nas verificações | `docker compose up -d --build --wait` e confira `docker compose ps` |
-| Alterei o código e nada mudou | reinicie o serviço: `docker compose restart <servico>` |
+| Alterei o código e nada mudou | salve o arquivo (`Ctrl+S`): os serviços recarregam sozinhos. Se não voltar, veja `docker compose logs <servico> --tail 20` |
 | Quero recomeçar do zero | `docker compose down -v && docker compose up -d --build --wait` |
 
 O código completo de referência fica na branch **`solucao`**.

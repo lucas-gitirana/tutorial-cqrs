@@ -1,73 +1,65 @@
-# Padrão CQRS na prática
-
-**Tempo estimado:** 35 minutos · **Linguagem:** Python (Flask) · **Infra:** Docker Compose + Redis
-
 ## O problema
 
-Em um serviço "tradicional", o mesmo modelo de dados atende escrita e leitura.
-Só que escrever e ler têm necessidades diferentes:
+Uma loja online **grava** um pedido de vez em quando, mas **lê** pedidos o tempo
+todo: tela do cliente, painel do vendedor, relatórios...
 
-- a **escrita** precisa garantir regras de negócio e integridade (tabelas
-  normalizadas, transações);
-- a **leitura** quer respostas rápidas e no formato da tela (dados
-  desnormalizados, totais já calculados, sem JOINs).
+Usar o mesmo modelo de dados para as duas coisas gera atrito:
+
+| | Escrita | Leitura |
+| --- | --- | --- |
+| Quer... | regras de negócio e integridade | respostas rápidas, no formato da tela |
+| Melhor formato | tabelas normalizadas, transações | dados prontos, totais já calculados |
 
 ## A ideia do CQRS
 
-**CQRS** (*Command Query Responsibility Segregation*) divide as operações em
-dois grupos:
+**CQRS** (*Command Query Responsibility Segregation*) separa o sistema em **dois
+lados**, cada um com o **seu próprio modelo de dados**:
 
-- **comandos**: mudam dados (criar pedido, cancelar pedido);
-- **consultas** (*queries*): só leem dados.
+- **Comando** (*Command*): muda dados. Ex.: criar pedido, cancelar pedido.
+- **Consulta** (*Query*): só lê dados. Ex.: ver um pedido, ver o resumo do cliente.
 
-Cada grupo tem o **seu próprio modelo**, e eles podem viver em serviços, bancos
-e até tecnologias diferentes (Newman, 2021). O lado de comando publica
-**eventos** ("PedidoCriado", "PedidoCancelado"). O lado de consulta escuta esses
-eventos e mantém **projeções**, que são visões já prontas para leitura.
+O lado de comando avisa o que aconteceu publicando **eventos**. O lado de
+consulta escuta esses eventos e monta **projeções**: visões dos dados já
+prontas para leitura.
 
-```text
-                    POST /pedidos                          GET /pedidos/<id>
-                    POST /pedidos/<id>/cancelar            GET /clientes/<c>/resumo
-                          │                                        ▲
-                          ▼                                        │
-                ┌───────────────────┐                    ┌───────────────────┐
-  cliente ───▶  │  pedidos-comando  │                    │  pedidos-consulta │  ◀─── cliente
-                │   (porta 8011)    │                    │   (porta 8012)    │
-                └─────────┬─────────┘                    └─────────▲─────────┘
-                          │ grava                                  │ projeções
-                          ▼                                        │ (memória)
-                ┌───────────────────┐   publica    ┌───────────────┴───┐
-                │  SQLite           │   eventos    │  Redis Stream     │
-                │  (normalizado)    │ ───────────▶ │  pedidos.eventos  │
-                └───────────────────┘              └───────────────────┘
-```
+Este é o mapa do sistema que você vai usar. Ele aparece em toda etapa,
+destacando a parte em que você está:
 
-## O que você vai fazer
+![Mapa do CQRS](tutorial/img/mapa-geral.svg)
 
-1. Conhecer o ambiente e criar o primeiro pedido.
-2. Implementar o comando **CancelarPedido**.
-3. Implementar a **projeção** que monta os detalhes do pedido para leitura.
-4. Testar o fluxo de ponta a ponta e observar a **consistência eventual**.
-5. Criar um **novo modelo de leitura** sem tocar no lado de comando.
+## As ferramentas
+
+| Peça | O que é | Papel aqui |
+| --- | --- | --- |
+| **Docker Compose** | sobe vários containers com um único comando, a partir do `docker-compose.yml` | liga os 3 serviços do mapa |
+| **Flask** | microframework web em Python | faz as APIs HTTP dos dois serviços |
+| **SQLite** | banco relacional que vive em um único arquivo | modelo de **escrita** do `pedidos-comando` |
+| **Redis** | banco em memória, muito rápido. Tem os *Streams*: listas de mensagens que só crescem, sempre em ordem | **barramento de eventos**: o comando publica, a consulta lê |
+| **curl** | faz requisições HTTP pelo terminal | é o "cliente" que você vai usar |
 
 ## Como funciona este tutorial
 
-- Blocos de comando têm um botão **▶ Executar**, que roda o comando no terminal integrado.
-- Etapas com avaliação têm o botão **Verificar**. Ele roda um script que confere
-  o seu código e/ou os serviços em execução. Leia a saída quando algo falhar:
-  ela diz o que está faltando.
-- Os arquivos que você vai editar abrem sozinhos, já na linha certa. Procure os
-  comentários `TODO`.
+- **▶ Executar**, embaixo de um bloco de comando, roda o comando no terminal.
+- **Verificar** confere o seu código e diz o que falta quando algo dá errado.
+- O arquivo a editar abre sozinho, ao lado. Procure o marcador **✏️**.
+- Os serviços recarregam sozinhos quando você **salva** um arquivo (`Ctrl+S`).
 
 ## Preparando o ambiente
 
-Ao abrir esta introdução, o terminal já começou a subir os containers
-(`docker compose up -d --build --wait`). A primeira execução baixa as imagens e pode
-levar 1–2 minutos. Se precisar rodar de novo:
+Ao abrir esta tela, o terminal já começou a rodar:
 
 ```bash
 docker compose up -d --build --wait
 ```
 
-> Pré-requisitos: Docker com Docker Compose e Python 3 (o Python é usado
-> pelas verificações). No GitHub Codespaces, tudo já vem instalado.
+- `up`: cria e liga os containers descritos no `docker-compose.yml`;
+- `-d`: roda em segundo plano e devolve o terminal para você;
+- `--build`: constrói a imagem dos serviços Python antes de subir;
+- `--wait`: só termina quando todos os serviços estiverem **saudáveis**
+  (respondendo). Assim você não começa com o ambiente pela metade.
+
+Na primeira vez demora 1 ou 2 minutos, porque as imagens são baixadas. Quando o
+terminal voltar ao prompt, clique em **Começar**.
+
+> Pré-requisitos: Docker com Docker Compose e Python 3 (usado pelas
+> verificações). No GitHub Codespaces já vem tudo instalado.

@@ -1,49 +1,65 @@
-# Etapa 4 — Ponta a ponta e consistência eventual
+![Mapa: lado de escrita](tutorial/img/mapa-comando.svg)
 
-**Objetivo:** ver o fluxo completo e entender o **atraso de replicação**
-(*replication lag*), o principal efeito colateral do CQRS.
+📍 **Você está aqui:** dentro do `pedidos-comando`. Você vai escrever o comando
+**CancelarPedido**, em duas etapas curtas.
 
-## 1. Crie um pedido e consulte imediatamente
+Todo comando segue a mesma receita. Veja `criar_pedido`, no arquivo aberto ao lado:
 
-O `pedidos-consulta` foi configurado com um atraso artificial de 2 segundos
-para aplicar eventos (`ATRASO_PROJECAO_SEGUNDOS` no `docker-compose.yml`), como
-uma réplica de leitura sobrecarregada.
+| Passo | O que faz | Etapa |
+| --- | --- | --- |
+| 1. **Validar** | recusa o comando se ele quebra uma regra | **esta** |
+| 2. **Gravar** | salva a mudança no modelo de escrita | 5 |
+| 3. **Publicar** | avisa o mundo com um evento | 5 |
 
-```bash
-PEDIDO=$(curl -s -w '\n' -X POST localhost:8011/pedidos -H 'Content-Type: application/json' \
-  -d '{"cliente": "carla", "itens": [{"produto": "mochila", "quantidade": 1, "preco": 150.0}]}' \
-  | python3 -c 'import sys, json; print(json.load(sys.stdin)["pedido_id"])')
-echo "--- consulta imediata:"; curl -s -w '\n' localhost:8012/pedidos/$PEDIDO
-sleep 3
-echo "--- consulta 3s depois:"; curl -s -w '\n' localhost:8012/pedidos/$PEDIDO
+## 🐍 Python rápido: `raise`
+
+`raise` **interrompe** a função na hora e lança um erro. Nada abaixo dele roda.
+
+```python
+if pedido is None:
+    raise ErroDeComando("Pedido não encontrado.", status=404)
+# se entrou no if, esta linha nunca é executada
 ```
 
-A primeira consulta devolve 404: o comando **já foi gravado**, mas o modelo de
-leitura **ainda não foi atualizado**. A segunda encontra o pedido. Isso é
-**consistência eventual**: o lado de consulta sempre "chega lá", mas não no
-mesmo instante.
+O `app.py` captura o `ErroDeComando` e responde ao cliente com o `status` dele.
 
-## 2. Cancele e acompanhe
+## Quais códigos HTTP usar?
 
-```bash
-curl -s -w '\n' -X POST localhost:8011/pedidos/$PEDIDO/cancelar
-sleep 3
-curl -s -w '\n' localhost:8012/pedidos/$PEDIDO
-curl -s -w '\n' localhost:8012/clientes/carla/resumo
+| Situação | Código | Por quê |
+| --- | --- | --- |
+| o pedido não existe | **404** Not Found | o recurso pedido não foi encontrado |
+| o pedido já está cancelado | **409** Conflict | a requisição é válida, mas **conflita com o estado atual** do pedido |
+
+> Não é 400 (Bad Request), porque a requisição está bem formada. E não é 500,
+> porque o servidor não falhou: foi uma regra de negócio que barrou.
+
+## ✏️ Faça
+
+Em `cancelar_pedido`, logo abaixo do marcador **PASSO 1 · VALIDAR**, escreva
+os dois `if`. O primeiro está pronto. Complete os `___` do segundo:
+
+```python
+    if pedido is None:
+        raise ErroDeComando("Pedido não encontrado.", status=404)
+
+    if pedido["status"] == ___:
+        raise ErroDeComando("Pedido já está cancelado.", status=___)
 ```
 
-## Como lidar com o atraso?
+> Atenção à **indentação**: 4 espaços, alinhado com `pedido = ...`.
 
-Bruce e Pereira (2019) descrevem três abordagens para o cliente:
+**Salve** o arquivo (`Ctrl+S`). O serviço recarrega sozinho.
 
-| Abordagem | Como funciona |
-| --- | --- |
-| **Atualização otimista** | a interface já mostra o resultado esperado do comando e desfaz se ele falhar |
-| **Polling** | após o comando, o cliente consulta periodicamente até ver a mudança |
-| **Publish-subscribe** | o cliente é avisado por um evento quando a consulta já foi atualizada |
+## 🧪 Teste
 
-> A verificação desta etapa usa **polling**: cria um pedido, consulta o
-> `pedidos-consulta` a cada 0,5 s até o pedido aparecer e depois cancela.
+Tente cancelar um pedido que não existe:
 
-Clique em **Verificar**. Os dois serviços precisam estar rodando com o código
-das Etapas 2 e 3.
+**`POST http://localhost:8011/pedidos/nao-existe/cancelar`**
+
+```bash
+curl -s -X POST localhost:8011/pedidos/nao-existe/cancelar -w '← HTTP %{http_code}\n'
+```
+
+Esperado: `{"erro": "Pedido não encontrado."}` e `← HTTP 404`.
+
+## Clique em Verificar ✔

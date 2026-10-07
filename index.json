@@ -8,39 +8,65 @@
     },
     "steps": [
       {
-        "title": "Conhecendo o ambiente",
+        "title": "As peças do mapa",
         "text": "tutorial/etapa-01.md",
         "verify": "tutorial/verificar-etapa-01.sh",
-        "file": { "name": "docker-compose.yml", "line": 16 },
+        "file": { "name": "docker-compose.yml", "line": 7 },
+        "points": 5
+      },
+      {
+        "title": "Enviando um comando",
+        "text": "tutorial/etapa-02.md",
+        "verify": "tutorial/verificar-etapa-02.sh",
         "points": 10
       },
       {
-        "title": "Implementando um comando",
-        "text": "tutorial/etapa-02.md",
-        "verify": "tutorial/verificar-etapa-02.sh",
-        "file": { "name": "servicos/pedidos-comando/comandos.py", "line": 76 },
-        "points": 20
-      },
-      {
-        "title": "Construindo o modelo de leitura",
+        "title": "Lendo do lado certo",
         "text": "tutorial/etapa-03.md",
         "verify": "tutorial/verificar-etapa-03.sh",
-        "file": { "name": "servicos/pedidos-consulta/projecoes.py", "line": 56 },
-        "points": 25
+        "points": 5
       },
       {
-        "title": "Ponta a ponta e consistência eventual",
+        "title": "Comando: validar",
         "text": "tutorial/etapa-04.md",
         "verify": "tutorial/verificar-etapa-04.sh",
-        "file": { "name": "docker-compose.yml", "line": 41 },
-        "points": 20
+        "file": { "name": "servicos/pedidos-comando/comandos.py", "line": 80 },
+        "points": 15
       },
       {
-        "title": "Um novo modelo de leitura",
+        "title": "Comando: gravar e publicar",
         "text": "tutorial/etapa-05.md",
         "verify": "tutorial/verificar-etapa-05.sh",
-        "file": { "name": "servicos/pedidos-consulta/projecoes.py", "line": 69 },
-        "points": 25
+        "file": { "name": "servicos/pedidos-comando/comandos.py", "line": 85 },
+        "points": 15
+      },
+      {
+        "title": "O que é projetar",
+        "text": "tutorial/etapa-06.md",
+        "verify": "tutorial/verificar-etapa-06.sh",
+        "file": { "name": "servicos/pedidos-consulta/projecoes.py", "line": 58 },
+        "points": 15
+      },
+      {
+        "title": "Projetando o cancelamento",
+        "text": "tutorial/etapa-07.md",
+        "verify": "tutorial/verificar-etapa-07.sh",
+        "file": { "name": "servicos/pedidos-consulta/projecoes.py", "line": 63 },
+        "points": 10
+      },
+      {
+        "title": "Consistência eventual",
+        "text": "tutorial/etapa-08.md",
+        "verify": "tutorial/verificar-etapa-08.sh",
+        "file": { "name": "docker-compose.yml", "line": 43 },
+        "points": 10
+      },
+      {
+        "title": "Uma tela nova, sem mexer na escrita",
+        "text": "tutorial/etapa-09.md",
+        "verify": "tutorial/verificar-etapa-09.sh",
+        "file": { "name": "servicos/pedidos-consulta/projecoes.py", "line": 74 },
+        "points": 15
       }
     ],
     "finish": {

@@ -16,11 +16,11 @@ class ModeloDeLeitura:
     qualquer momento reaplicando todos os eventos do stream."""
 
     def __init__(self) -> None:
-        # pedido_id -> documento pronto para exibição (Etapa 3)
+        # pedido_id -> documento pronto para exibição (Etapas 6 e 7)
         self.pedidos: dict[str, dict] = {}
         # cliente -> {"cliente", "pedidos_ativos", "total_gasto"}
         self.resumo_por_cliente: dict[str, dict] = {}
-        # produto -> quantidade vendida, desconsiderando cancelamentos (Etapa 5)
+        # produto -> quantidade vendida, desconsiderando cancelamentos (Etapa 9)
         self.vendas_por_produto: dict[str, int] = {}
 
     def mais_vendidos(self, limite: int = 5) -> list[dict]:
@@ -48,11 +48,13 @@ def projetar_resumo_por_cliente(modelo: ModeloDeLeitura, evento: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Etapa 3: projeção dos detalhes de cada pedido
+# Etapas 6 e 7: projeção dos DETALHES de cada pedido
 # ---------------------------------------------------------------------------
 def projetar_pedido(modelo: ModeloDeLeitura, evento: dict) -> None:
     dados = evento["dados"]
 
+    # ═══ Etapa 6 · ao receber "PedidoCriado" ═══════════════════════════════
+    # ✏️  Escreva aqui o `if` que guarda o documento em modelo.pedidos.
     if evento["tipo"] == "PedidoCriado":
         modelo.pedidos[dados["pedido_id"]] = {
             "pedido_id": dados["pedido_id"],
@@ -64,27 +66,35 @@ def projetar_pedido(modelo: ModeloDeLeitura, evento: dict) -> None:
             "criado_em": dados["criado_em"],
         }
 
-    elif evento["tipo"] == "PedidoCancelado":
-        pedido = modelo.pedidos.get(dados["pedido_id"])
-        if pedido is not None:
-            pedido["status"] = "CANCELADO"
-            pedido["cancelado_em"] = dados["cancelado_em"]
+
+
+    # ═══ Etapa 7 · ao receber "PedidoCancelado" ════════════════════════════
+    # ✏️  Escreva aqui o `if` que marca o documento como CANCELADO.
+    if evento["tipo"] == "PedidoCancelado" and dados["pedido_id"] in modelo.pedidos:
+        documento = modelo.pedidos[dados["pedido_id"]]
+        documento["status"] = "CANCELADO"
+        documento["cancelado_em"] = dados["cancelado_em"]
+
 
 
 # ---------------------------------------------------------------------------
-# Etapa 5: um NOVO modelo de leitura — produtos mais vendidos
+# Etapa 9: um NOVO modelo de leitura — produtos mais vendidos
 # ---------------------------------------------------------------------------
 def projetar_vendas_por_produto(modelo: ModeloDeLeitura, evento: dict) -> None:
-    if evento["tipo"] == "PedidoCriado":
-        sinal = 1
-    elif evento["tipo"] == "PedidoCancelado":
-        sinal = -1
-    else:
-        return
+    dados = evento["dados"]
 
-    for item in evento["dados"]["itens"]:
-        atual = modelo.vendas_por_produto.get(item["produto"], 0)
-        modelo.vendas_por_produto[item["produto"]] = atual + sinal * item["quantidade"]
+    # ═══ Etapa 9 ═══════════════════════════════════════════════════════════
+    # ✏️  Escreva aqui os dois `if` (PedidoCriado soma, PedidoCancelado subtrai).
+    if evento["tipo"] == "PedidoCriado":
+        for item in dados["itens"]:
+            produto = item["produto"]
+            modelo.vendas_por_produto[produto] = modelo.vendas_por_produto.get(produto, 0) + item["quantidade"]
+
+    if evento["tipo"] == "PedidoCancelado":
+        for item in dados["itens"]:
+            produto = item["produto"]
+            modelo.vendas_por_produto[produto] = modelo.vendas_por_produto.get(produto, 0) - item["quantidade"]
+
 
 
 PROJECOES = (projetar_resumo_por_cliente, projetar_pedido, projetar_vendas_por_produto)

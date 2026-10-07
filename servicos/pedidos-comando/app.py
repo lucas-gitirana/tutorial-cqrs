@@ -69,4 +69,5 @@ def saude():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, threaded=True)
+    # use_reloader: ao salvar um .py, o serviço reinicia sozinho com o código novo.
+    app.run(host="0.0.0.0", port=8000, threaded=True, use_reloader=True)
