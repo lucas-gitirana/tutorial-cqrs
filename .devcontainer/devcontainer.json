@@ -5,7 +5,7 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   "forwardPorts": [8011, 8012],
-  "postCreateCommand": "bash .devcontainer/instalar-extensao.sh",
+  "postAttachCommand": "bash .devcontainer/instalar-extensao.sh",
   "customizations": {
     "vscode": {
       "extensions": ["ms-python.python"]
