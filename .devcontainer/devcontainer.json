@@ -1,9 +1,6 @@
 {
   "name": "Tutorial CQRS",
-  "build": { "dockerfile": "Dockerfile" },
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
+  "image": "ghcr.io/lucas-gitirana/tutoriais-devcontainer:latest",
   "forwardPorts": [8011, 8012],
   "postAttachCommand": "bash .devcontainer/instalar-extensao.sh",
   "customizations": {
