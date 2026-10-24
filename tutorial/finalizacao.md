@@ -36,4 +36,10 @@ docker compose down -v
 
 A solução completa está na branch `solucao` deste repositório.
 
-bloxo
+## Formulários de pós-teste e SUS:
+Após enviar o seu resultado ao professor, responda a esses dois formulários abaixo:
+- [Formulário de Pós-teste][]
+- [Formulário SUS][]
+
+[Formulário de Pós-teste]: https://docs.google.com/forms/d/e/1FAIpQLSePetSPhG04Q4adG9hnTLeqpGcLQ2MIvFjHkeBsJqr3P4wnMg/viewform?usp=sharing&ouid=103537969988084746732
+[Formulário SUS]: https://docs.google.com/forms/d/e/1FAIpQLSf_2BOW8VR3QeK4oJAORaNrIfw803TcrqspXP8xAwcXXbuuPQ/viewform?usp=sharing&ouid=103537969988084746732
