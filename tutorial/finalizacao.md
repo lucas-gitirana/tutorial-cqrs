@@ -35,3 +35,5 @@ docker compose down -v
 ```
 
 A solução completa está na branch `solucao` deste repositório.
+
+bloxo
