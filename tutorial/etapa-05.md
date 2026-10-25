@@ -5,7 +5,7 @@ publicar o evento no Redis (as setas **grava** e **evento** do mapa).
 
 ## ✏️ Faça: PASSO 2 · GRAVAR
 
-Abaixo do marcador **PASSO 2**, escreva uma linha:
+Abaixo do marcador **PASSO 2**, cole a linha:
 
 ```python
     repositorio.atualizar_status(pedido_id, "CANCELADO")
@@ -14,7 +14,7 @@ Abaixo do marcador **PASSO 2**, escreva uma linha:
 ## ✏️ Faça: PASSO 3 · PUBLICAR
 
 Um **evento** conta algo que **já aconteceu**, por isso o nome fica no passado:
-`PedidoCancelado`. Abaixo do marcador **PASSO 3**, escreva (é quase igual ao
+`PedidoCancelado`. Abaixo do marcador **PASSO 3**, cole o trecho a seguir (é quase igual ao
 `publicar` de `criar_pedido`, logo acima):
 
 ```python
@@ -48,6 +48,10 @@ curl -s -X POST localhost:8011/pedidos/$(cut -s -d'"' -f4 /tmp/pedido-ana.json)/
 
 Esperado: `"status": "CANCELADO"` e `← HTTP 200`. Agora **rode o mesmo comando
 de novo**: deve vir `← HTTP 409`, a validação da Etapa 4 funcionando.
+
+```bash
+curl -s -X POST localhost:8011/pedidos/$(cut -s -d'"' -f4 /tmp/pedido-ana.json)/cancelar -w '← HTTP %{http_code}\n'
+```
 
 ## Clique em Verificar ✔
 

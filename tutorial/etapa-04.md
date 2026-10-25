@@ -35,8 +35,7 @@ O `app.py` captura o `ErroDeComando` e responde ao cliente com o `status` dele.
 
 ## ✏️ Faça
 
-Em `cancelar_pedido`, logo abaixo do marcador **PASSO 1 · VALIDAR**, escreva
-os dois `if`. O primeiro está pronto. Complete os `___` do segundo:
+Em `cancelar_pedido`, logo abaixo do marcador **PASSO 1 · VALIDAR**, cole o bloco de código abaixo e complete o primeiro `___` com `"CANCELADO"` e o segundo `___` com `409`:
 
 ```python
     if pedido is None:

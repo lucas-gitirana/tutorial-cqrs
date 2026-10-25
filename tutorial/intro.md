@@ -46,11 +46,7 @@ destacando a parte em que você está:
 
 ## Preparando o ambiente
 
-Ao abrir esta tela, o terminal já começou a rodar:
-
-```bash
-docker compose up -d --build --wait
-```
+Ao abrir esta tela, o terminal já começou a rodar a partir do comando `docker compose up -d --build --wait`:
 
 - `up`: cria e liga os containers descritos no `docker-compose.yml`;
 - `-d`: roda em segundo plano e devolve o terminal para você;
@@ -63,12 +59,3 @@ terminal voltar ao prompt, clique em **Começar**.
 
 > Pré-requisitos: Docker com Docker Compose e Python 3 (usado pelas
 > verificações). No GitHub Codespaces já vem tudo instalado.
-
-
-## Formulários de perfil e pré-teste:
-Antes de iniciar o tutorial, responda a esses dois formulários abaixo:
-- [Formulário de Perfil][]
-- [Formulário de Pré-teste][]
-
-[Formulário de Perfil]: https://docs.google.com/forms/d/e/1FAIpQLSd0sK7DuFHo7JzWoHxSpauYSRYfiCzqHszTFwsh25rBAU6m2g/viewform?usp=sharing&ouid=103537969988084746732
-[Formulário de Pré-teste]: https://docs.google.com/forms/d/e/1FAIpQLSfRc16VLBXunjM_kk6k_fQkxLw0lwujXvfJFQbfj8S9vb2WHg/viewform?usp=sharing&ouid=103537969988084746732

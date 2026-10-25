@@ -18,7 +18,7 @@
 
 ## ✏️ Faça
 
-Abaixo do marcador **Etapa 7**, escreva o `if` e complete os `___`:
+Abaixo do marcador **Etapa 7**, cole o código abaixo e complete o primeiro `___` com `"CANCELADO"` e o segundo `___` com `dados["cancelado_em"]`:
 
 ```python
     if evento["tipo"] == "PedidoCancelado" and dados["pedido_id"] in modelo.pedidos:

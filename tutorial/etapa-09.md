@@ -30,8 +30,7 @@ projeção** sobre os mesmos eventos.
 
 ## ✏️ Faça
 
-Abaixo do marcador **Etapa 9**, escreva o primeiro `if` (pronto) e complete o
-segundo, que faz a mesma coisa **subtraindo**:
+Abaixo do marcador **Etapa 9**, cole o código abaixo e complete o `___` com `modelo.vendas_por_produto.get(produto, 0) - item["quantidade"]`, que faz a mesma coisa que o `if` de cima, mas **subtraindo**:
 
 ```python
     if evento["tipo"] == "PedidoCriado":

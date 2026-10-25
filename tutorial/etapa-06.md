@@ -54,7 +54,7 @@ guarde em `modelo.pedidos` um **documento pronto para exibição**.
 
 ## ✏️ Faça
 
-Abaixo do marcador **Etapa 6**, escreva o `if` e complete os `___`:
+Abaixo do marcador **Etapa 6**, cole o código abaixo e complete o primeiro `___` com `dados["itens"]`, o segundo `___` com `dados["total"]` e o terceiro `___` com `dados["criado_em"]`:
 
 ```python
     if evento["tipo"] == "PedidoCriado":
